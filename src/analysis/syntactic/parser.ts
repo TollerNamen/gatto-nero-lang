@@ -126,7 +126,7 @@ export class LexerLookupStore {
     this.statement(parseNamedDefinition, TokenKind.MY);
     this.statement(parseNamedDefinition, TokenKind.IDENTIFIER);
 
-    this.statement(parseGetImport, TokenKind.GET);
+    this.statement(parseGetImport, TokenKind.IMPORT);
 
     this.statement(parsePkgStatement, TokenKind.PKG);
 

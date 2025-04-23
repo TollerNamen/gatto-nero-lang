@@ -20,7 +20,6 @@ import { parseExpression, parseModifier } from "./expressions.ts";
 import { SyntacticalError } from "../../error.ts";
 import { SourcePointer, Token, TokenKind } from "./lexer.ts";
 import { Type } from "../../ast/types.ts";
-import { TreeType } from "../../ast/ast.ts";
 
 /**
  * Parses a block of statements; Does not implement any Handler.
@@ -76,15 +75,17 @@ export function parseExpressionStatement(p: LexerLookupStore): Statement {
 
 export function parseGetImport(p: LexerLookupStore): Statement {
   const start = p.lexer.next().location.start;
+  const from = parseExpression(p);
+
+  p.expectCurrent().toBeOfKind(TokenKind.BRACKY_OPEN);
   const targets: string[] = []; //parseExpression(p, BindingPower.COMMA);
   do {
     targets.push(p.lexer.next().value);
   } while (
     p.lexer.current().kind === TokenKind.COMMA && p.lexer.next()
   );
-  p.expectCurrent().toBeOfKind(TokenKind.FROM);
+  p.expectCurrent().toBeOfKind(TokenKind.BRACKY_CLOSE);
   p.lexer.next();
-  const from = parseExpression(p);
   return {
     location: { start, end: from.location.end },
     targets,
@@ -113,6 +114,8 @@ export function parseNamedDefinition(p: LexerLookupStore) {
     childModifier = parseModifier(p);
     definitions.push(parseDefinition(p, childModifier, childStart));
   }
+
+  p.lexer.next();
 
   return {
     definitions,

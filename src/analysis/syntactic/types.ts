@@ -1,7 +1,14 @@
 import { BindingPower, TokenKindCheck, TokenKindCheckImpl } from "./parser.ts";
 import { cannotFindNUD_HandlerError } from "./expressions.ts";
-import { Array, Function, ObjectType, Symbol, Type } from "../../ast/types.ts";
-import { Lexer, Token, TokenKind } from "./lexer.ts";
+import {
+  Array,
+  Function,
+  ObjectType,
+  ObjectTypeMember,
+  Symbol,
+  Type,
+} from "../../ast/types.ts";
+import { Lexer, SourcePointer, Token, TokenKind } from "./lexer.ts";
 
 export class LexerTypeLookupStore {
   readonly ledLookup = new Map<TokenKind, LED_Handler>();
@@ -74,14 +81,25 @@ function parseArray(p: LexerTypeLookupStore) {
 const notAtCloseParen = (lexer: Lexer) =>
   lexer.current().kind !== TokenKind.PARY_CLOSE;
 
-// { TYPE1, TYPE2, ... }
+// { name METHODTYPE, ... }
 export function parseObject(p: LexerTypeLookupStore) {
   const start = p.lexer.current().location.start;
-  const types: Type[] = [];
+  const types: ObjectTypeMember[] = [];
 
+  let name: string;
+  let type: Type;
+  let childStart: SourcePointer;
   do {
     p.lexer.next();
-    types.push(parseType(p));
+    childStart = p.lexer.current().location.start;
+    name = p.lexer.next().value;
+    type = parseType(p);
+    types.push({
+      name,
+      memberType: type,
+      treeType: "TypeObjectMember",
+      location: { start: childStart, end: type.location.end },
+    });
   } while (
     p.lexer.current().kind === TokenKind.SEMI ||
     p.lexer.next(true).kind === TokenKind.LINE

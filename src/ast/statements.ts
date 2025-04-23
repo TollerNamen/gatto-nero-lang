@@ -35,41 +35,7 @@ export enum Modifier {
   NATIVE,
   FORCE,
 }
-/*
-export interface HasModifier extends Statement {
-  readonly modifier: Modifier[];
-}
 
-export interface NamedDefiniton extends HasModifier {
-  readonly name: string;
-  readonly definitions: MemberDefinition[] | Definition;
-
-  treeType: TreeType.DEFINITION_NAMED;
-}
-
-export interface MemberDefinition extends HasModifier {
-  readonly definition: Definition;
-
-  treeType: TreeType.DEFINITION_MEMBER;
-}
-
-export interface Definition extends Statement {
-  readonly type: Type;
-  readonly value: Expression;
-
-  treeType: TreeType.DEFINITION;
-}
-*/
-
-/*
-Person:
-  (Str): ...
-  (Int): ...
-;;
-foo (Int): Int
-bar {} = { ... }
-
-*/
 interface HasName {
   readonly name: string;
 }
