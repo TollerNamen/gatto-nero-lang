@@ -36,7 +36,7 @@ our type Worker {
 }
 
 my Worker (Person, Str): {} = (person, job): {
-  wrap Person [ name, age ]
+  wrap person [ name, age ]
   our job (): Str = job
 }
 
