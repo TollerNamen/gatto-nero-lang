@@ -35,6 +35,11 @@ our type Worker {
   job (): Str
 }
 
+my Worker (Person, Str): {} = (person, job): {
+  wrap Person [ name, age ]
+  our job (): Str = job
+}
+
 # creates a static object with the members 'TIM', 'TOM', 'BEN'
 # acts like an enum
 our Workers Dictionary<Worker> = {
