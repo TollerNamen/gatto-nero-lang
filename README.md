@@ -114,3 +114,12 @@ The `(Str, Int): {}` here means:
 | `(Str)`    | a function taking `Str` as parameter |
 | `{}`       | an object                         |
 | `(Str, Int): {}` | a function taking the parameter of type `Str` and `Int` and returning an object |
+
+## Project State
+Some features still need to be implemented into the parser and semantics are missing entirely.
+Stay tuned.
+
+## Contributing
+You may refrain from contributing to the awful typescript codebase;
+Later there will be a bytecode interpreter written in Rust
+and the source code compiler will be rewritten in gatto nero language
