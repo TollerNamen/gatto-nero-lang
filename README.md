@@ -29,7 +29,7 @@ our type Worker {
 
   # lets the compiler create wrapper functions
   # avoids composition boilerplate
-  # while not having to take responsibility like in inheritance
+  # while not having to take responsibility for all methods like in inheritance
   wrap Person [ name, age ]
 
   job (): Str
