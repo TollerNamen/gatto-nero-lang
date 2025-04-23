@@ -4,7 +4,7 @@ A declarative object/functional programming language (not *Object Oriented*!)
 
 ## Preview
 
-```
+```python
 pkg gatto.nero.lang
 
 import gatto.nero.lang [ Str, Int ]
@@ -67,7 +67,7 @@ our main ([]Str) = args: "Hello, World!" | println
 MODIFIER NAME TYPE = VALUE
 ```
 #### Example
-```
+```python
 IntegerMaxValue Int = 2 147 483 647
 
 # some function:
@@ -82,7 +82,7 @@ add:
 
 ### Objects
 #### An object Expression
-```
+```python
 {
   # Only methods are allowed
   our name (): Str = (): "Oscar"
@@ -91,14 +91,14 @@ add:
 ```
 Objects cannot be modified and when you want to have a different state,
 you construct them using a function:
-```
+```python
 (name Str, age Int): {
   our name (): Str = (): name
   our age (): Int = (): age
 }
 ```
 Now to use this function to instantiate custom objects, you assign it to a variable:
-```
+```python
 # Type is inferred
 Person (Str, Int): {} = (name, age): {
   our name (): Str = (): name
