@@ -4,14 +4,12 @@ import {
   Definition,
   GetImportStatement,
   Modifier,
+  MultiTypeStatement,
   NamedDefinition,
   NamedDefinitions,
   PkgStatement,
+  SimpleTypeStatement,
   Statement,
-  TypeStmt,
-  TypeStmtChild,
-  TypeStmtFunction,
-  TypeStmtMethod,
 } from "../../ast/statements.ts";
 import { locationFromStatementArray, skipEmptyStatement } from "./util.ts";
 import { LexerLookupStore, StatementHandler } from "./parser.ts";
@@ -156,6 +154,46 @@ function parseDefinition(
 export function parseTypeKeyword(p: LexerLookupStore) {
   const start = p.lexer.next().location.start;
   const name = p.lexer.next().value;
+  const typeParser = new LexerTypeLookupStore(p.lexer)
+
+  if (p.lexer.current().kind !== TokenKind.COLON) {
+    const type = parseType(typeParser);
+    p.expect(p.lexer.next(true)).toBeOneOfKinds([
+      TokenKind.SEMI,
+      TokenKind.LINE,
+    ]);
+    return {
+      name,
+      onlyType: type,
+      location: { start, end: type.location.end },
+      treeType: "TypeStatementSimple"
+    } as SimpleTypeStatement;
+  }
+
+  p.lexer.next();
+
+  const types: Type[] = [];
+  do {
+    types.push(parseType(typeParser));
+    p.expect(p.lexer.next(true)).toBeOneOfKinds([
+      TokenKind.SEMI,
+      TokenKind.LINE,
+    ]);
+  } while (p.lexer.current().kind !== TokenKind.SEMISEMI);
+
+  const end = p.lexer.next().location.end;
+
+  return {
+    name,
+    types,
+    location: { start, end },
+    treeType: "TypeStatementComplex"
+  } as MultiTypeStatement;
+}
+/*
+export function parseTypeKeyword(p: LexerLookupStore) {
+  const start = p.lexer.next().location.start;
+  const name = p.lexer.next().value;
   if (p.lexer.current().kind !== TokenKind.CURLY_OPEN) {
     const type = parseType(new LexerTypeLookupStore(p.lexer));
     p.expect(p.lexer.next(true)).toBeOneOfKinds([
@@ -208,7 +246,7 @@ export function parseTypeKeyword(p: LexerLookupStore) {
     types,
   } as TypeStmt;
 }
-
+*/
 export function parsePkgStatement(p: LexerLookupStore) {
   const start = p.lexer.next().location.start;
 

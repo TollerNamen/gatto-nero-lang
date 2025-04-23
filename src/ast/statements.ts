@@ -65,23 +65,20 @@ export interface Definition extends BaseDefinition {
   treeType: "Definition";
 }
 
-export interface TypeStmtChild extends Statement {
-}
-export interface TypeStmtFunction extends TypeStmtChild {
-  readonly type: Type;
-
-  treeType: "TypeStatementFunction";
-}
-export interface TypeStmtMethod extends TypeStmtChild {
-  readonly types: Type[];
+export interface TypeStatement extends Statement {
   readonly name: string;
 
-  treeType: "TypeStatementMethod";
+  treeType: "TypeStatementComplex" | "TypeStatementSimple"
 }
 
-export interface TypeStmt extends Statement {
-  readonly name: string;
-  readonly types: TypeStmtChild[];
+export interface SimpleTypeStatement extends TypeStatement {
+  readonly onlyType: Type;
 
-  treeType: "TypeStatement";
+  treeType: "TypeStatementSimple"
+}
+
+export interface MultiTypeStatement extends TypeStatement {
+  readonly types: Type[]
+
+  treeType: "TypeStatementComplex"
 }
