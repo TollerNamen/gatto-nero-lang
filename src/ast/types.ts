@@ -10,33 +10,41 @@ export interface Type {
 export interface Symbol extends Type {
   symbol: string;
 
-  treeType: TreeType.TYPE_SYMBOL;
+  treeType: "TypeSymbol";
 }
 
 export interface Array extends Type {
   size: string | undefined;
   child: Type;
 
-  treeType: TreeType.TYPE_ARRAY;
+  treeType: "TypeArray";
 }
 
 // (): Int or (Int) or (Int): Int or (Int): (Int): Int etc.
 // (num Int) or (fun (Str)) or (name Str, age Int)
 export interface Function extends Type {
-  arguments: Parameter[];
+  arguments: Type[];
   returnType: Type | undefined;
 
-  treeType: TreeType.TYPE_FUNCTION;
-}
-export interface Parameter extends Type {
-  type: Type;
-
-  treeType: TreeType.TYPE_FUNCTION;
+  treeType: "TypeFunction";
 }
 
 export interface Union extends Type {
   left: Type;
   right: Type;
 
-  treeType: TreeType.TYPE_UNION;
+  treeType: "TypeUnion";
+}
+
+export interface ObjectType extends Type {
+  memberTypes: ObjectTypeMember[];
+
+  treeType: "TypeObject";
+}
+
+export interface ObjectTypeMember extends Type {
+  name: string;
+  memberType: Type;
+
+  treeType: "TypeObjectMember";
 }

@@ -1,6 +1,6 @@
 # gatto nero language
 
-A declarative object/functional programming language (not *Object Oriented*!)
+A declarative object/functional programming language (not _Object Oriented_!)
 
 ## Preview
 
@@ -62,16 +62,20 @@ our Workers Dictionary<Worker> = {
 # main function, program starts executing here
 # Piping
 our main ([]Str) = args: "Hello, World!" | println
-
 ```
 
 ## Basic Concepts
+
 ### Variables and Functions
+
 #### Structure
+
 ```
 MODIFIER NAME TYPE = VALUE
 ```
+
 #### Example
+
 ```python
 IntegerMaxValue Int = 2 147 483 647
 
@@ -86,7 +90,9 @@ add:
 ```
 
 ### Objects
+
 #### An object Expression
+
 ```python
 {
   # Only methods are allowed
@@ -94,15 +100,20 @@ add:
   our age (): Int = (): 47
 }
 ```
-Objects cannot be modified and when you want to have a different state,
-you construct them using a function:
+
+Objects cannot be modified and when you want to have a different state, you
+construct them using a function:
+
 ```python
 (name Str, age Int): {
   our name (): Str = (): name
   our age (): Int = (): age
 }
 ```
-Now to use this function to instantiate custom objects, you assign it to a variable:
+
+Now to use this function to instantiate custom objects, you assign it to a
+variable:
+
 ```python
 # Type is inferred
 Person (Str, Int): {} = (name, age): {
@@ -110,21 +121,24 @@ Person (Str, Int): {} = (name, age): {
   our age (): Int = (): age
 }
 ```
+
 The `(Str, Int): {}` here means:
 
-| Symbol     | Meaning                           |
-| ---------- | --------------------------------- |
-| `()`       | a function returning nothing/void |
-| `(): TYPE` | a function returning `TYPE`       |
-| `(Str)`    | a function taking `Str` as parameter |
-| `{}`       | an object                         |
+| Symbol           | Meaning                                                                         |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `()`             | a function returning nothing/void                                               |
+| `(): TYPE`       | a function returning `TYPE`                                                     |
+| `(Str)`          | a function taking `Str` as parameter                                            |
+| `{}`             | an object                                                                       |
 | `(Str, Int): {}` | a function taking the parameter of type `Str` and `Int` and returning an object |
 
 ## Project State
-Some features still need to be implemented into the parser and semantics are missing entirely.
-Stay tuned.
+
+Some features still need to be implemented into the parser and semantics are
+missing entirely. Stay tuned.
 
 ## Contributing
-You may refrain from contributing to the awful typescript codebase;
-Later there will be a bytecode interpreter written in Rust
-and the source code compiler will be rewritten in gatto nero language
+
+You may refrain from contributing to the awful typescript codebase; Later there
+will be a bytecode interpreter written in Rust and the source code compiler will
+be rewritten in gatto nero language

@@ -100,7 +100,7 @@ main();
 definitions:
   MODIFIERS:
     (my|our) force? native?
-  
+
   MODIFIERS? NAME TYPE = VALUE
   NAME: (MODIFIERS? TYPE = VALUE)+
 

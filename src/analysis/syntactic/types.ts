@@ -1,6 +1,6 @@
 import { BindingPower, TokenKindCheck, TokenKindCheckImpl } from "./parser.ts";
 import { cannotFindNUD_HandlerError } from "./expressions.ts";
-import { Parameter, Symbol, Type, Array, Function, } from "../../ast/types.ts";
+import { Array, Function, ObjectType, Symbol, Type } from "../../ast/types.ts";
 import { Lexer, Token, TokenKind } from "./lexer.ts";
 
 export class LexerTypeLookupStore {
@@ -24,6 +24,7 @@ export class LexerTypeLookupStore {
     this.nud(TokenKind.BRACKY_OPEN, parseArray, BindingPower.DEFAULT);
     this.nud(TokenKind.IDENTIFIER, parseSymbol, BindingPower.PRIMARY);
     this.nud(TokenKind.PARY_OPEN, parseFunction, BindingPower.CALL);
+    this.nud(TokenKind.CURLY_OPEN, parseObject, BindingPower.DEFAULT);
   }
 
   get lexer() {
@@ -46,7 +47,10 @@ interface NUD_Handler {
 }
 
 function parseSymbol(p: LexerTypeLookupStore) {
-  return { location: p.lexer.current().location, symbol: p.lexer.next().value } as Symbol;
+  return {
+    location: p.lexer.current().location,
+    symbol: p.lexer.next().value,
+  } as Symbol;
 }
 
 function parseArray(p: LexerTypeLookupStore) {
@@ -60,16 +64,43 @@ function parseArray(p: LexerTypeLookupStore) {
   p.lexer.next();
   const child = parseType(p);
 
-  return { location:  { start, end: child.location.end }, size: size, child: child } as Array;
+  return {
+    location: { start, end: child.location.end },
+    size: size,
+    child: child,
+  } as Array;
 }
 
 const notAtCloseParen = (lexer: Lexer) =>
   lexer.current().kind !== TokenKind.PARY_CLOSE;
 
+// { TYPE1, TYPE2, ... }
+export function parseObject(p: LexerTypeLookupStore) {
+  const start = p.lexer.current().location.start;
+  const types: Type[] = [];
+
+  do {
+    p.lexer.next();
+    types.push(parseType(p));
+  } while (
+    p.lexer.current().kind === TokenKind.SEMI ||
+    p.lexer.next(true).kind === TokenKind.LINE
+  );
+
+  p.expectCurrent().toBeOfKind(TokenKind.CURLY_CLOSE);
+
+  const end = p.lexer.next().location.end;
+
+  return {
+    location: { start, end },
+    memberTypes: types,
+  } as ObjectType;
+}
+
 function parseFunction(p: LexerTypeLookupStore) {
   const start = p.lexer.next().location.start; // past (
 
-  let args: Parameter[] = [];
+  let args: Type[] = [];
   if (notAtCloseParen(p.lexer)) { // one after (
     args = parseFunctionArgument(p);
   }
@@ -87,11 +118,10 @@ function parseFunction(p: LexerTypeLookupStore) {
 }
 
 function parseFunctionArgument(p: LexerTypeLookupStore) {
-  const args: Parameter[] = [];
+  const args: Type[] = [];
 
   while (notAtCloseParen(p.lexer)) {
-      const type = parseType(p);
-      args.push({ location: type.location, type } as Parameter);
+    args.push(parseType(p));
     if (p.lexer.current().kind !== TokenKind.COMMA) {
       break;
     }

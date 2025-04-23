@@ -1,53 +1,40 @@
-export enum TreeType {
-  STATEMENT,
-  GET_IMPORT,
-  PKG,
-
-  TYPE_STATEMENT,
-  TYPE_STATEMENT_CHILD,
-  TYPE_STATEMENT_FUNCTION,
-  TYPE_STATEMENT_METHOD,
-
-  BLOCK,
-
-  DEFINITION,
-  DEFINITION_NAMED,
-  DEFINITION_MEMBER,
-
-  EXPRESSION,
-
-  EMPTY_GROUP,
-
-  LAMBDA,
-  LAMBDA_BLOCK,
-
-  MATCH,
-
-  CALL,
-
-  LET_IN,
-
-  TERNARY,
-  BINARY,
-  UNARY_PRE,
-  UNARY_POST,
-
-  LISTING,
-
-  LITERAL_IDENTIFIER,
-  LITERAL_NUMBER,
-  LITERAL_STRING,
-  LITERAL_CHAR,
-
-  TYPE,
-  TYPE_SYMBOL,
-  TYPE_ARRAY,
-  TYPE_UNION,
-  TYPE_FUNCTION,
-  TYPE_FUNCTION_ARGUMENT,
-  TYPE_FUNCTION_PARAMETER,
-  TYPE_FUNCTION_PARAMETER_NAMED,
-}
+export type TreeType =
+  | "Statement"
+  | "GetImport"
+  | "Pkg"
+  | "TypeStatement"
+  | "TypeStatementChild"
+  | "TypeStatementFunction"
+  | "TypeStatementMethod"
+  | "Block"
+  | "Definition"
+  | "DefinitionNamed"
+  | "DefinitionsNamed"
+  | "Expression"
+  | "EmptyGroup"
+  | "Lambda"
+  | "LambdaParameter"
+  | "Object"
+  | "ObjectMember"
+  | "Match"
+  | "Call"
+  | "LetIn"
+  | "Ternary"
+  | "Binary"
+  | "PreUnary"
+  | "PostUnary"
+  | "Listing"
+  | "LiteralIdentifier"
+  | "LiteralNumber"
+  | "LiteralString"
+  | "LiteralCharacter"
+  | "Type"
+  | "TypeSymbol"
+  | "TypeObject"
+  | "TypeObjectMember"
+  | "TypeArray"
+  | "TypeUnion"
+  | "TypeFunction";
 /*
 export interface TreeVisitor<T, P = undefined> {
   visitStatement(statement: Statement, param: P | undefined): T;

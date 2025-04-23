@@ -378,6 +378,8 @@ export enum TokenKind {
 
   MATCH = KEYWORD_START + 9,
   END = KEYWORD_START + 10,
+
+  FORCE = KEYWORD_START + 11,
 }
 
 function keywords() {

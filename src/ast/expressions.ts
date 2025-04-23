@@ -1,13 +1,12 @@
-import { TokenKind } from "../analysis/syntactic/lexer.ts";
-import { TreeType } from "./ast.ts";
-import { BlockStatement, Statement } from "./statements.ts";
+import { BlockStatement, Modifier, Statement } from "./statements.ts";
+import { Type } from "./types.ts";
 
 export interface Expression extends Statement {}
 
 export interface LetIn extends Expression {
   readonly block: BlockStatement;
 
-  treeType: TreeType.LET_IN;
+  treeType: "LetIn";
 }
 
 /*
@@ -20,34 +19,50 @@ export interface Access extends Modifier {
 */
 
 export interface EmptyGroup extends Expression {
-  treeType: TreeType.EMPTY_GROUP;
+  treeType: "EmptyGroup";
 }
 
 export interface Lambda extends Expression {
   readonly arguments: Expression;
   readonly value: Expression;
 
-  treeType: TreeType.LAMBDA;
+  treeType: "Lambda";
 }
-export interface BlockLambda extends Expression {
-  readonly arguments: Expression;
-  readonly statements: Statement[];
 
-  treeType: TreeType.LAMBDA_BLOCK;
+export interface TypedParam extends Expression {
+  readonly name: string;
+  readonly paramType: Type;
+
+  treeType: "LambdaParameter";
+}
+
+export interface Object extends Expression {
+  readonly members: ObjectMember[];
+
+  treeType: "Object";
+}
+
+export interface ObjectMember extends Expression {
+  readonly modifiers: Modifier[];
+  readonly name: string;
+  readonly memberType: Type | undefined;
+  readonly value: Expression;
+
+  treeType: "ObjectMember";
 }
 
 export interface Match extends Expression {
   readonly left: Expression;
   readonly branches: Expression[];
 
-  treeType: TreeType.MATCH;
+  treeType: "Match";
 }
 
 export interface Call extends Expression {
   readonly target: Expression;
   readonly arguments: Expression;
 
-  treeType: TreeType.CALL;
+  treeType: "Call";
 }
 
 export interface Ternary extends Statement {
@@ -55,7 +70,7 @@ export interface Ternary extends Statement {
   readonly success: Expression;
   readonly failure: Expression;
 
-  treeType: TreeType.TERNARY;
+  treeType: "Ternary";
 }
 
 export interface Binary extends Expression {
@@ -63,42 +78,42 @@ export interface Binary extends Expression {
   readonly right: Expression;
   readonly op: string;
 
-  treeType: TreeType.BINARY;
+  treeType: "Binary";
 }
 
 export interface PostUnary extends Expression {
   readonly op: string;
   readonly left: Expression;
 
-  treeType: TreeType.UNARY_POST;
+  treeType: "PostUnary";
 }
 export interface PreUnary extends Expression {
   readonly op: string;
   readonly right: Expression;
 
-  treeType: TreeType.UNARY_PRE;
+  treeType: "PreUnary";
 }
 
 export interface Listing extends Expression {
   readonly expressions: Expression[];
 
-  treeType: TreeType.LISTING;
+  treeType: "Listing";
 }
 
 export interface Identifier extends Expression {
   readonly symbol: string;
 
-  treeType: TreeType.LITERAL_IDENTIFIER;
+  treeType: "LiteralIdentifier";
 }
 export interface LiteralValue extends Expression {
   readonly value: string;
 }
 export interface NumberLiteral extends LiteralValue {
-  treeType: TreeType.LITERAL_NUMBER;
+  treeType: "LiteralNumber";
 }
 export interface StringLiteral extends LiteralValue {
-  treeType: TreeType.LITERAL_STRING;
+  treeType: "LiteralString";
 }
 export interface CharacterLiteral extends LiteralValue {
-  treeType: TreeType.LITERAL_CHAR;
+  treeType: "LiteralCharacter";
 }

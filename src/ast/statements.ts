@@ -12,20 +12,20 @@ export interface GetImportStatement extends Statement {
   readonly targets: string[];
   readonly from: Expression;
 
-  treeType: TreeType.GET_IMPORT;
+  treeType: "GetImport";
 }
 
 export interface PkgStatement extends Statement {
   readonly pkg: Expression;
 
-  treeType: TreeType.PKG;
+  treeType: "Pkg";
 }
 
 export interface BlockStatement extends Statement {
   readonly statements: Statement[];
-  readonly with_: Expression[];
+  readonly with: Expression[];
 
-  treeType: TreeType.BLOCK;
+  treeType: "Block";
 }
 
 export enum Modifier {
@@ -35,7 +35,7 @@ export enum Modifier {
   NATIVE,
   FORCE,
 }
-
+/*
 export interface HasModifier extends Statement {
   readonly modifier: Modifier[];
 }
@@ -59,24 +59,63 @@ export interface Definition extends Statement {
 
   treeType: TreeType.DEFINITION;
 }
+*/
+
+/*
+Person:
+  (Str): ...
+  (Int): ...
+;;
+foo (Int): Int
+bar {} = { ... }
+
+*/
+interface HasName {
+  readonly name: string;
+}
+
+interface HasModifiers {
+  readonly modifiers: Modifier[];
+}
+
+export interface NamedDefinitions extends Statement, HasName, HasModifiers {
+  readonly definitions: Definition[];
+
+  treeType: "DefinitionsNamed";
+}
+
+export interface NamedDefinition extends BaseDefinition, HasName {
+  treeType: "DefinitionNamed";
+}
+
+export interface BaseDefinition extends Statement, HasModifiers {
+  readonly varType: Type | undefined;
+  readonly value: Expression;
+
+  treeType: "Definition" | "DefinitionNamed";
+}
+
+export interface Definition extends BaseDefinition {
+  treeType: "Definition";
+}
 
 export interface TypeStmtChild extends Statement {
 }
 export interface TypeStmtFunction extends TypeStmtChild {
   readonly type: Type;
 
-  treeType: TreeType.TYPE_STATEMENT_FUNCTION;
+  treeType: "TypeStatementFunction";
 }
 export interface TypeStmtMethod extends TypeStmtChild {
   readonly types: Type[];
   readonly name: string;
 
-  treeType: TreeType.TYPE_STATEMENT_METHOD;
+  treeType: "TypeStatementMethod";
 }
 
 export interface TypeStmt extends Statement {
   readonly name: string;
   readonly types: TypeStmtChild[];
 
-  treeType: TreeType.TYPE_STATEMENT;
+  treeType: "TypeStatement";
 }

@@ -5,17 +5,15 @@ import { Lexer, Token, TokenKind } from "./lexer.ts";
 import {
   parseBlock,
   parseGetImport,
-  parseNamedDefinitionDeclaration,
+  parseNamedDefinition,
   parsePkgStatement,
   parseTypeKeyword,
 } from "./statements.ts";
 import {
   parseBinary,
-  parseBlockLambda,
   parseCall,
   parseCommaListing,
   parseGroup,
-  parseLambda,
   parsePostUnary,
   parsePreUnary,
   parsePrimary,
@@ -103,10 +101,12 @@ export class LexerLookupStore {
       TokenKind.DOT,
     ]);
 
-    this.led(BindingPower.LAMBDA, parseLambda)([TokenKind.LAMBDA]);
-    this.led(BindingPower.LAMBDA, parseBlockLambda)([TokenKind.BLOCK_LAMBDA]);
+    this.led(BindingPower.LAMBDA, parseBinary)([TokenKind.COLON]);
 
-    this.led(BindingPower.LABEL, parseBinary)([TokenKind.COLON]);
+    //this.led(BindingPower.LAMBDA, parseLambda)([TokenKind.LAMBDA]);
+    //this.led(BindingPower.LAMBDA, parseBlockLambda)([TokenKind.BLOCK_LAMBDA]);
+
+    //this.led(BindingPower.LABEL, parseBinary)([TokenKind.COLON]);
 
     this.nud(BindingPower.PRIMARY, parsePrimary)([
       TokenKind.IDENTIFIER,
@@ -122,9 +122,9 @@ export class LexerLookupStore {
 
     this.nud(BindingPower.DEFAULT, parseGroup)([TokenKind.PARY_OPEN]);
 
-    this.statement(parseNamedDefinitionDeclaration, TokenKind.OUR);
-    this.statement(parseNamedDefinitionDeclaration, TokenKind.MY);
-    this.statement(parseNamedDefinitionDeclaration, TokenKind.LET);
+    this.statement(parseNamedDefinition, TokenKind.OUR);
+    this.statement(parseNamedDefinition, TokenKind.MY);
+    this.statement(parseNamedDefinition, TokenKind.IDENTIFIER);
 
     this.statement(parseGetImport, TokenKind.GET);
 

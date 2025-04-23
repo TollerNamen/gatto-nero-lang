@@ -4,10 +4,9 @@ import {
   LexerLookupStore,
   NUD_Handler,
 } from "./parser.ts";
-import { Token, TokenKind } from "./lexer.ts";
+import { SourcePointer, Token, TokenKind } from "./lexer.ts";
 import {
   Binary,
-  BlockLambda,
   Call,
   CharacterLiteral,
   EmptyGroup,
@@ -17,13 +16,17 @@ import {
   Listing,
   Match,
   NumberLiteral,
+  ObjectMember,
   PostUnary,
   PreUnary,
   StringLiteral,
 } from "../../ast/expressions.ts";
 import { SyntacticalError } from "../../error.ts";
 import { getLast, skipEmptyStatement } from "./util.ts";
-import { parseBlock } from "./statements.ts";
+import { parseExpressionStatement } from "./statements.ts";
+import { Modifier } from "../../ast/statements.ts";
+import { Type } from "../../ast/types.ts";
+import { LexerTypeLookupStore, parseType } from "./types.ts";
 
 export function cannotFindNUD_HandlerError(
   token: Token,
@@ -77,7 +80,7 @@ export function parseMatch(
   p: LexerLookupStore,
   left: Expression,
   bp: BindingPower,
-) {
+): Match {
   p.lexer.next();
 
   const branches: Expression[] = [];
@@ -103,14 +106,15 @@ export function parseMatch(
     },
     left,
     branches,
-  } as Match;
+    treeType: "Match",
+  };
 }
 
 export function parseBinary(
   p: LexerLookupStore,
   left: Expression,
   bp: BindingPower,
-) {
+): Binary {
   const op = p.lexer.next().value;
   const right = parseExpression(p, bp);
   return {
@@ -118,45 +122,15 @@ export function parseBinary(
     left,
     right,
     op,
-  } as Binary;
-}
-
-export function parseLambda(
-  p: LexerLookupStore,
-  left: Expression,
-  _: BindingPower,
-) {
-  p.lexer.next();
-  const value = parseExpression(p);
-  return {
-    location: { start: left.location.start, end: value.location.end },
-    arguments: left,
-    value,
-  } as Lambda;
-}
-
-export function parseBlockLambda(
-  p: LexerLookupStore,
-  left: Expression,
-  _: BindingPower,
-) {
-  const start = p.lexer.next().location.start;
-
-  const block = parseBlock(p, [TokenKind.SEMISEMI]);
-
-  const end = block.location.end;
-  return {
-    location: { start, end },
-    arguments: left,
-    statements: block.statements,
-  } as BlockLambda;
+    treeType: "Binary",
+  };
 }
 
 export function parseCall(
   p: LexerLookupStore,
   left: Expression,
   _: BindingPower,
-) {
+): Call {
   const start = p.lexer.next().location.start;
   let args: Expression = {
     location: {
@@ -182,27 +156,29 @@ export function parseCall(
     location: { start: left.location.start, end },
     arguments: args,
     target: left,
-  } as Call;
+    treeType: "Call",
+  };
 }
 export function parsePipedCall(
   p: LexerLookupStore,
   left: Expression,
   _: BindingPower,
-) {
+): Call {
   p.lexer.next();
   const target = parseExpression(p, BindingPower.CALL);
   return {
     location: { start: left.location.start, end: target.location.end },
     arguments: left,
     target,
-  } as Call;
+    treeType: "Call",
+  };
 }
 
 export function parseCommaListing(
   p: LexerLookupStore,
   left: Expression,
   _: BindingPower,
-) {
+): Listing {
   const expressions: Expression[] = [];
   while ([TokenKind.COMMA, TokenKind.LINE].includes(p.lexer.current().kind)) {
     skipEmptyStatement(p);
@@ -217,54 +193,109 @@ export function parseCommaListing(
       end: expressions[expressions.length - 1].location.end,
     },
     expressions,
-  } as Listing;
+    treeType: "Listing",
+  };
 }
 
 export function parsePostUnary(
   p: LexerLookupStore,
   left: Expression,
   _: BindingPower,
-) {
+): PostUnary {
   const op = p.lexer.next();
   return {
     location: { start: left.location.start, end: op.location.end },
     left,
     op: op.value,
-  } as PostUnary;
+    treeType: "PostUnary",
+  };
 }
-export function parsePreUnary(p: LexerLookupStore) {
+export function parsePreUnary(p: LexerLookupStore): PreUnary {
   const op = p.lexer.next();
   const right = parseExpression(p, BindingPower.UNARY);
   return {
     location: { start: op.location.start, end: right.location.end },
     right,
     op: op.value,
-  } as PreUnary;
+    treeType: "PreUnary",
+  };
 }
-/*
-parsePrimary (LexerLookupStore): Maybe<Expression> =
-  p -> Maybe (p.next)
-    .map (token { value, location } -> token.kind match
-      IDENTIFIER -> IdentTree (value, location)
-      NUMBER -> NumTree (value, location)
-      STRING -> StrTree (value, location)
-      CHAR -> CharTree (value, location)
-      _ -> assertNotReached ()
-    )
-*/
+
+export function parseObject(p: LexerLookupStore) {
+  const start = p.lexer.next().location.start;
+  const member: ObjectMember[] = [];
+
+  let name: string;
+  let modifiers: Modifier[];
+  let memberStart: SourcePointer;
+  let memberEnd: SourcePointer;
+  let memberType: Type | undefined;
+  let value: Expression;
+  while (p.lexer.current().kind !== TokenKind.CURLY_CLOSE) {
+    memberStart = p.lexer.current().location.start;
+    modifiers = parseModifier(p);
+    name = p.lexer.next().value;
+    memberType = p.lexer.current().kind === TokenKind.EQ
+      ? undefined
+      : parseType(new LexerTypeLookupStore(p.lexer));
+    p.expect(p.lexer.next()).toBeOfKind(TokenKind.EQ);
+    value = parseExpressionStatement(p);
+    memberEnd = p.lexer.current().location.end;
+
+    member.push({
+      modifiers,
+      name,
+      memberType,
+      value,
+      location: { start: memberStart, end: memberEnd },
+      treeType: "ObjectMember",
+    });
+  }
+}
+
+export function parseModifier(p: LexerLookupStore): Modifier[] {
+  const modifiers: Modifier[] = [];
+
+  if (
+    p.lexer.current().kind === TokenKind.OUR ||
+    p.lexer.current().kind === TokenKind.MY
+  ) {
+    modifiers.push(Modifier[p.lexer.next().kind.toString()]);
+  } else {
+    modifiers.push(Modifier.ACCESS_NONE);
+  }
+
+  if (p.lexer.current().kind === TokenKind.NATIVE) {
+    modifiers.push(Modifier[p.lexer.next().kind.toString()]);
+  }
+  if (p.lexer.current().kind === TokenKind.FORCE) {
+    modifiers.push(Modifier[p.lexer.next().kind.toString()]);
+  }
+
+  return modifiers;
+}
+
 export function parsePrimary(p: LexerLookupStore) {
   const token = p.lexer.next();
   const location = token.location;
   const value = token.value;
   switch (token.kind) {
     case TokenKind.IDENTIFIER:
-      return { location, symbol: value } as Identifier;
+      return {
+        location,
+        symbol: value,
+        treeType: "LiteralIdentifier",
+      } as Identifier;
     case TokenKind.NUMBER:
-      return { location, value } as NumberLiteral;
+      return { location, value, treeType: "LiteralNumber" } as NumberLiteral;
     case TokenKind.STRING:
-      return { location, value } as StringLiteral;
+      return { location, value, treeType: "LiteralString" } as StringLiteral;
     case TokenKind.CHAR:
-      return { location, value } as CharacterLiteral;
+      return {
+        location,
+        value,
+        treeType: "LiteralCharacter",
+      } as CharacterLiteral;
     default:
       throw new SyntacticalError(
         "Unexpected TokenKind: " + TokenKind[token.kind],
@@ -298,7 +329,10 @@ export function parseGroup(p: LexerLookupStore) {
   const start = p.lexer.next().location.start;
   const token = p.lexer.current();
   if (token.kind === TokenKind.PARY_CLOSE) {
-    return { location: { start, end: token.location.end } } as EmptyGroup;
+    return {
+      location: { start, end: token.location.end },
+      treeType: "EmptyGroup",
+    } as EmptyGroup;
   }
   const expression = parseExpression(p);
   p.expect(p.lexer.next()).toBeOfKind(TokenKind.PARY_CLOSE);
