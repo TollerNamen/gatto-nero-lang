@@ -140,10 +140,10 @@ export function parseCall(
     },
   } as EmptyGroup;
   if (p.lexer.current().kind !== TokenKind.PARY_CLOSE) {
-    const array = [parseExpression(p, BindingPower.CALL)];
+    const array = [parseExpression(p)];
     while (p.lexer.current().kind === TokenKind.COMMA) {
       p.lexer.next();
-      array.push(parseExpression(p, BindingPower.CALL));
+      array.push(parseExpression(p));
     }
     args = {
       location: { start, end: getLast(array).location.end },
