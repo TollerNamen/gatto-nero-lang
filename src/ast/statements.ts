@@ -65,7 +65,7 @@ export interface Definition extends BaseDefinition {
   treeType: "Definition";
 }
 
-export interface TypeStatement extends Statement {
+export interface TypeStatement extends Statement, HasModifiers {
   readonly name: string;
 
   treeType: "TypeStatementComplex" | "TypeStatementSimple"

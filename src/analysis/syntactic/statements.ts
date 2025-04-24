@@ -91,9 +91,15 @@ export function parseGetImport(p: LexerLookupStore): Statement {
   } as GetImportStatement;
 }
 
-export function parseNamedDefinition(p: LexerLookupStore) {
-  const start = p.lexer.current().location.start;
+export function parseModifiedStatement(p: LexerLookupStore) {
   const modifiers = parseModifier(p);
+  return p.lexer.current().kind !== TokenKind.TYPE
+    ? parseNamedDefinition(p, modifiers)
+    : parseTypeKeyword(p, modifiers);
+}
+
+export function parseNamedDefinition(p: LexerLookupStore, modifiers: Modifier[] = []) {
+  const start = p.lexer.current().location.start;
 
   p.expectCurrent().toBeOfKind(TokenKind.IDENTIFIER);
   const name = p.lexer.next().value;
@@ -154,7 +160,7 @@ function parseDefinition(
     } as NamedDefinition;
 }
 
-export function parseTypeKeyword(p: LexerLookupStore) {
+export function parseTypeKeyword(p: LexerLookupStore, modifiers: Modifier[] = []) {
   const start = p.lexer.next().location.start;
   const name = p.lexer.next().value;
   const typeParser = new LexerTypeLookupStore(p.lexer)
@@ -167,6 +173,7 @@ export function parseTypeKeyword(p: LexerLookupStore) {
     ]);
     return {
       name,
+      modifiers,
       onlyType: type,
       location: { start, end: type.location.end },
       treeType: "TypeStatementSimple"
@@ -189,6 +196,7 @@ export function parseTypeKeyword(p: LexerLookupStore) {
   return {
     name,
     types,
+    modifiers,
     location: { start, end },
     treeType: "TypeStatementComplex"
   } as MultiTypeStatement;

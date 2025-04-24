@@ -85,6 +85,8 @@ Person:
     our canDrinkBeer Bool = (): age >= 16
   }
 ;;
+
+factorial (Int): Int = n:n * factorial (n - 1)
 `;
 
 function main() {

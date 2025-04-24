@@ -5,6 +5,7 @@ import { Lexer, Token, TokenKind } from "./lexer.ts";
 import {
   parseBlock,
   parseGetImport,
+  parseModifiedStatement,
   parseNamedDefinition,
   parsePkgStatement,
   parseTypeKeyword,
@@ -125,15 +126,18 @@ export class LexerLookupStore {
 
     this.nud(BindingPower.DEFAULT, parseObject)([TokenKind.CURLY_OPEN])
 
-    this.statement(parseNamedDefinition, TokenKind.OUR);
-    this.statement(parseNamedDefinition, TokenKind.MY);
     this.statement(parseNamedDefinition, TokenKind.IDENTIFIER);
+    this.statement(parseTypeKeyword, TokenKind.TYPE);
+
+    this.statement(parseModifiedStatement, TokenKind.OUR)
+    this.statement(parseModifiedStatement, TokenKind.MY)
+    this.statement(parseModifiedStatement, TokenKind.NATIVE)
+    this.statement(parseModifiedStatement, TokenKind.FORCE)
 
     this.statement(parseGetImport, TokenKind.IMPORT);
 
     this.statement(parsePkgStatement, TokenKind.PKG);
 
-    this.statement(parseTypeKeyword, TokenKind.TYPE);
   }
 
   get lexer() {
