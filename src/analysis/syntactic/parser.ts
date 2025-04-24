@@ -14,6 +14,7 @@ import {
   parseCall,
   parseCommaListing,
   parseGroup,
+  parseObject,
   parsePostUnary,
   parsePreUnary,
   parsePrimary,
@@ -121,6 +122,8 @@ export class LexerLookupStore {
     ]);
 
     this.nud(BindingPower.DEFAULT, parseGroup)([TokenKind.PARY_OPEN]);
+
+    this.nud(BindingPower.DEFAULT, parseObject)([TokenKind.CURLY_OPEN])
 
     this.statement(parseNamedDefinition, TokenKind.OUR);
     this.statement(parseNamedDefinition, TokenKind.MY);

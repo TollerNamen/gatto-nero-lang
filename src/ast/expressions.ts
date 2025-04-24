@@ -46,7 +46,7 @@ export interface ObjectMember extends Expression {
   readonly modifiers: Modifier[];
   readonly name: string;
   readonly memberType: Type | undefined;
-  readonly value: Expression;
+  readonly value: Expression | undefined;
 
   treeType: "ObjectMember";
 }

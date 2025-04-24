@@ -86,11 +86,12 @@ export function parseObject(p: LexerTypeLookupStore) {
   const start = p.lexer.current().location.start;
   const types: ObjectTypeMember[] = [];
 
+  p.lexer.next();
+
   let name: string;
   let type: Type;
   let childStart: SourcePointer;
-  do {
-    p.lexer.next();
+  while (p.lexer.current().kind !== TokenKind.CURLY_CLOSE) {
     childStart = p.lexer.current().location.start;
     name = p.lexer.next().value;
     type = parseType(p);
@@ -100,12 +101,11 @@ export function parseObject(p: LexerTypeLookupStore) {
       treeType: "TypeObjectMember",
       location: { start: childStart, end: type.location.end },
     });
-  } while (
-    p.lexer.current().kind === TokenKind.SEMI ||
-    p.lexer.next(true).kind === TokenKind.LINE
-  );
-
-  p.expectCurrent().toBeOfKind(TokenKind.CURLY_CLOSE);
+    p.expect(p.lexer.next(true)).toBeOneOfKinds([
+      TokenKind.SEMI,
+      TokenKind.LINE,
+    ]);
+  }
 
   const end = p.lexer.next().location.end;
 

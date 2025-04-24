@@ -1,5 +1,5 @@
 import { Statement } from "../../ast/statements.ts";
-import { SourceLocation, TokenKind } from "./lexer.ts";
+import { SourceLocation, Token, TokenKind } from "./lexer.ts";
 import { LexerLookupStore } from "./parser.ts";
 
 export function skipEmptyStatement(p: LexerLookupStore) {
@@ -19,4 +19,8 @@ export function locationFromStatementArray(
 
 export function getLast<T>(array: T[]) {
   return array[array.length - 1];
+}
+
+export function currentIsOneOfKinds(token: Token, kinds: TokenKind[]) {
+  return kinds.includes(token.kind);
 }

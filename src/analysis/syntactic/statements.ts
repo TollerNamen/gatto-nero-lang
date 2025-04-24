@@ -75,7 +75,7 @@ export function parseGetImport(p: LexerLookupStore): Statement {
   const start = p.lexer.next().location.start;
   const from = parseExpression(p);
 
-  p.expectCurrent().toBeOfKind(TokenKind.BRACKY_OPEN);
+  p.expect(p.lexer.next()).toBeOfKind(TokenKind.BRACKY_OPEN);
   const targets: string[] = []; //parseExpression(p, BindingPower.COMMA);
   do {
     targets.push(p.lexer.next().value);
@@ -113,11 +113,12 @@ export function parseNamedDefinition(p: LexerLookupStore) {
     definitions.push(parseDefinition(p, childModifier, childStart));
   }
 
-  p.lexer.next();
+  const end = p.lexer.next().location.end;
 
   return {
     definitions,
     name,
+    location: { start, end },
     treeType: "DefinitionsNamed",
   } as NamedDefinitions;
 }
@@ -131,6 +132,8 @@ function parseDefinition(
   const type = p.lexer.current().kind !== TokenKind.EQ
     ? parseType(new LexerTypeLookupStore(p.lexer))
     : undefined;
+
+  p.lexer.next(); // get past =
 
   const value = parseExpressionStatement(p);
   return name === ""

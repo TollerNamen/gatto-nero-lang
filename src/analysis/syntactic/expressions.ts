@@ -16,13 +16,14 @@ import {
   Listing,
   Match,
   NumberLiteral,
+  Object,
   ObjectMember,
   PostUnary,
   PreUnary,
   StringLiteral,
 } from "../../ast/expressions.ts";
 import { SyntacticalError } from "../../error.ts";
-import { getLast, skipEmptyStatement } from "./util.ts";
+import { currentIsOneOfKinds, getLast, skipEmptyStatement } from "./util.ts";
 import { parseExpressionStatement } from "./statements.ts";
 import { Modifier } from "../../ast/statements.ts";
 import { Type } from "../../ast/types.ts";
@@ -221,9 +222,9 @@ export function parsePreUnary(p: LexerLookupStore): PreUnary {
   };
 }
 
-export function parseObject(p: LexerLookupStore) {
+export function parseObject(p: LexerLookupStore): Object {
   const start = p.lexer.next().location.start;
-  const member: ObjectMember[] = [];
+  const members: ObjectMember[] = [];
 
   let name: string;
   let modifiers: Modifier[];
@@ -235,14 +236,31 @@ export function parseObject(p: LexerLookupStore) {
     memberStart = p.lexer.current().location.start;
     modifiers = parseModifier(p);
     name = p.lexer.next().value;
-    memberType = p.lexer.current().kind === TokenKind.EQ
-      ? undefined
-      : parseType(new LexerTypeLookupStore(p.lexer));
-    p.expect(p.lexer.next()).toBeOfKind(TokenKind.EQ);
-    value = parseExpressionStatement(p);
-    memberEnd = p.lexer.current().location.end;
 
-    member.push({
+    if (currentIsOneOfKinds(p.lexer.next(true), [TokenKind.LINE, TokenKind.SEMI])) {
+      members.push({
+        modifiers,
+        name,
+        memberType: undefined,
+        value: undefined,
+        location: { start: memberStart, end: p.lexer.current().location.end },
+        treeType: "ObjectMember"
+      });
+      continue;
+    }
+
+    if (p.lexer.current().kind === TokenKind.EQ) {
+      memberType = undefined;
+      p.lexer.next();
+    }
+    else {
+      memberType = parseType(new LexerTypeLookupStore(p.lexer));
+      p.expect(p.lexer.next()).toBeOfKind(TokenKind.EQ);
+    }
+    value = parseExpressionStatement(p);
+    memberEnd = value.location.end;
+
+    members.push({
       modifiers,
       name,
       memberType,
@@ -250,6 +268,14 @@ export function parseObject(p: LexerLookupStore) {
       location: { start: memberStart, end: memberEnd },
       treeType: "ObjectMember",
     });
+  }
+  
+  const end = p.lexer.next().location.end;
+
+  return {
+    members,
+    treeType: "Object",
+    location: { start, end },
   }
 }
 
@@ -329,6 +355,7 @@ export function parseGroup(p: LexerLookupStore) {
   const start = p.lexer.next().location.start;
   const token = p.lexer.current();
   if (token.kind === TokenKind.PARY_CLOSE) {
+    p.lexer.next();
     return {
       location: { start, end: token.location.end },
       treeType: "EmptyGroup",

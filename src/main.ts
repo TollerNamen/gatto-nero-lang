@@ -78,7 +78,7 @@ our INT_MAX_SIZE Int =  2 147 483 647
 our INT_MIN_SIZE Int = -2 147 483 648
 
 Person:
-  our (Str): {} = name -> Person (name, 18)
+  our (Str): {} = name: Person (name, 18)
   our (Str, Int): {} = (name, age): {
     our name
     our age
