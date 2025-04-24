@@ -1,0 +1,18 @@
+pkg gatto.nero.lang
+
+import gatto.nero.lang [ Str, Int ]
+
+type Person {
+  name (): Str
+  age (): Int
+}
+
+Person:
+  (Str): {} = name: Person (name, 18)
+  (Str, Int): {} = (name, age): {
+    our name
+    our age
+    our canDrinkBeer (): Bool = (): age >= 16
+  }
+;;
+

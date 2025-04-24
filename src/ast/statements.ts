@@ -8,6 +8,10 @@ export interface Statement {
   location: SourceLocation;
 }
 
+export interface Program {
+  statements: Statement[];
+}
+
 export interface GetImportStatement extends Statement {
   readonly targets: string[];
   readonly from: Expression;
@@ -23,7 +27,6 @@ export interface PkgStatement extends Statement {
 
 export interface BlockStatement extends Statement {
   readonly statements: Statement[];
-  readonly with: Expression[];
 
   treeType: "Block";
 }

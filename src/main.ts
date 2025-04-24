@@ -1,5 +1,6 @@
 import { Lexer } from "./analysis/syntactic/lexer.ts";
 import { LexerLookupStore } from "./analysis/syntactic/parser.ts";
+import { CompilationUnit } from "./compilation-unit.ts";
 
 const testSource = `
 someFun (): Str = "Hello, World!"
@@ -89,14 +90,12 @@ Person:
 factorial (Int): Int = n:n * factorial (n - 1)
 `;
 
-function main() {
-  const lexer = new Lexer(test);
-  const store = new LexerLookupStore(lexer);
-  const tree = store.parse();
+async function main() {
+  const tree = await new CompilationUnit("example.gnl").parse();
   console.dir(JSON.stringify(tree, astToStringJson, "  "));
 }
 
-main();
+await main();
 
 /*
 definitions:

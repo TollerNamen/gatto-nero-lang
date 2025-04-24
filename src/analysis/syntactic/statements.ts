@@ -28,7 +28,7 @@ import { Type } from "../../ast/types.ts";
 export function parseBlock(
   p: LexerLookupStore,
   terminatingKinds: TokenKind[] = [],
-) {
+): BlockStatement {
   const statements: Statement[] = [];
   terminatingKinds.push(TokenKind.EOF);
 
@@ -43,7 +43,11 @@ export function parseBlock(
 
   const location = locationFromStatementArray(statements);
 
-  return { location, statements } as BlockStatement;
+  return {
+    location,
+    statements,
+    treeType: "Block"
+  };
 }
 
 export function parseStatement(p: LexerLookupStore): Statement {
@@ -201,63 +205,7 @@ export function parseTypeKeyword(p: LexerLookupStore, modifiers: Modifier[] = []
     treeType: "TypeStatementComplex"
   } as MultiTypeStatement;
 }
-/*
-export function parseTypeKeyword(p: LexerLookupStore) {
-  const start = p.lexer.next().location.start;
-  const name = p.lexer.next().value;
-  if (p.lexer.current().kind !== TokenKind.CURLY_OPEN) {
-    const type = parseType(new LexerTypeLookupStore(p.lexer));
-    p.expect(p.lexer.next(true)).toBeOneOfKinds([
-      TokenKind.SEMI,
-      TokenKind.LINE,
-    ]);
-    return {
-      location: { start, end: type.location.end },
-      name,
-      types: [
-        { location: type.location, type } as TypeStmtFunction,
-      ] as TypeStmtChild[],
-    } as TypeStmt;
-  }
-  p.lexer.next();
 
-  const typeParser = new LexerTypeLookupStore(p.lexer);
-  const types: TypeStmtChild[] = [];
-  let methodName: string;
-  let type: Type;
-  while (p.lexer.current().kind !== TokenKind.CURLY_CLOSE) {
-    if (
-      p.lexer.current().kind === TokenKind.IDENTIFIER
-    ) {
-      methodName = p.lexer.next().value;
-      type = parseType(typeParser);
-      types.push(
-        {
-          location: type.location,
-          types: [type],
-          name: methodName,
-        } as TypeStmtMethod,
-      );
-    } else {
-      type = parseType(typeParser);
-      types.push({ location: type.location, type } as TypeStmtFunction);
-    }
-    p.expect(p.lexer.next(true)).toBeOneOfKinds([
-      TokenKind.SEMI,
-      TokenKind.LINE,
-    ]);
-  }
-  p.expect(p.lexer.next()).toBeOfKind(TokenKind.CURLY_CLOSE);
-  return {
-    location: {
-      start,
-      end: types[types.length - 1].location.end,
-    },
-    name,
-    types,
-  } as TypeStmt;
-}
-*/
 export function parsePkgStatement(p: LexerLookupStore) {
   const start = p.lexer.next().location.start;
 

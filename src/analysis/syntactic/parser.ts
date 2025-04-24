@@ -1,4 +1,4 @@
-import { Statement } from "../../ast/statements.ts";
+import { Program, Statement } from "../../ast/statements.ts";
 import { Expression } from "../../ast/expressions.ts";
 import { SyntacticalError } from "../../error.ts";
 import { Lexer, Token, TokenKind } from "./lexer.ts";
@@ -137,15 +137,14 @@ export class LexerLookupStore {
     this.statement(parseGetImport, TokenKind.IMPORT);
 
     this.statement(parsePkgStatement, TokenKind.PKG);
-
   }
 
   get lexer() {
     return this._lexer;
   }
 
-  parse(): Statement {
-    return parseBlock(this);
+  parse(): Program {
+    return { statements: parseBlock(this).statements };
   }
 
   expect(token: Token): TokenKindCheck {
